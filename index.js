@@ -112,11 +112,11 @@ RotateStream.prototype._reopen = function ( cb ) {
             this.emit( 'error', err );
         } else {
             that.closed = that.destroyed = false;
+            that.fd = null;
             that.once( 'open', cb )
-                .open();
+            .open();
         }
     });
-    this.fd = null;
 }
 
 RotateStream.prototype._write = function ( data, encoding, cb ) {
