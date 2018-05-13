@@ -135,25 +135,24 @@ class RotateStream extends fs.WriteStream {
     }
 
     writeAsync(data, encoding) {
-        let self = this
-
         if (!(data instanceof Buffer)) {
             return Promise.reject(new Error('Invalid data'))
         }
 
-        return fs.writeAsync(this.fd, data, 0, data.length, this.pos)
-        .then((bytes) => {
-            self.bytesWritten += bytes
-
-            if (self.pos !== undefined) {
-                self.pos += data.length
+        return new Promise((resolve, reject) => {
+            fs.write(this.fd, data, 0, data.length, this.pos, (er, bytes) => {
+                if (er) {
+                    if (this.autoClose) {
+                        this.destroy();
+                    }
+                    reject(er);
+                }
+                this.bytesWritten += bytes;
+                resolve();
+            });
+            if (this.pos !== undefined) {
+                this.pos += data.length;
             }
-        })
-        .catch((err) => {
-            if (self.autoClose) {
-                self.destroy()
-            }
-            throw err
         })
     }
 }
